@@ -1,0 +1,39 @@
+.steno-status-bar {
+	color: var(--text-error);
+	font-weight: bold;
+}
+
+.steno-recording-modal {
+	text-align: center;
+}
+
+.steno-timer {
+	font-size: 2.5em;
+	font-weight: bold;
+	margin: 1em 0;
+	font-variant-numeric: tabular-nums;
+}
+
+.steno-stop-button {
+	font-size: 1.2em;
+	padding: 0.5em 2em;
+}
+
+.steno-prompt-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 0.5em;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	margin-bottom: 0.5em;
+}
+
+.steno-prompt-item-name {
+	font-weight: bold;
+}
+
+.steno-prompt-item-actions {
+	display: flex;
+	gap: 0.5em;
+}
