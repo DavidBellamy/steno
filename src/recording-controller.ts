@@ -1,4 +1,4 @@
-import { App, Notice, TFile } from 'obsidian';
+import { App, Notice, TFile, normalizePath } from 'obsidian';
 import { StenoSettings, DiarizedTranscript, TranscriptionService, LLMService } from './types';
 import { Recorder } from './recorder';
 import { AssemblyAIProvider } from './transcription/assemblyai-provider';
@@ -75,8 +75,9 @@ export class RecordingController {
 		let transcript: DiarizedTranscript;
 		try {
 			transcript = await transcriptionService.transcribe(audioData, mimeType);
-		} catch (e) {
-			new Notice(`Steno: Transcription failed — ${e}`);
+		} catch (e: unknown) {
+			const msg = e instanceof Error ? e.message : String(e);
+			new Notice(`Steno: Transcription failed — ${msg}`, 10000);
 			return;
 		}
 
@@ -152,7 +153,7 @@ export class RecordingController {
 		const settings = this.getSettings();
 		const ext = this.recorder.getFileExtension(mimeType);
 		const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-		const folder = settings.audioFolder;
+		const folder = normalizePath(settings.audioFolder);
 
 		// Ensure folder exists
 		const existing = this.app.vault.getAbstractFileByPath(folder);
@@ -160,7 +161,7 @@ export class RecordingController {
 			await this.app.vault.createFolder(folder);
 		}
 
-		const filePath = `${folder}/recording-${timestamp}.${ext}`;
+		const filePath = normalizePath(`${folder}/recording-${timestamp}.${ext}`);
 		await this.app.vault.createBinary(filePath, audioData);
 	}
 

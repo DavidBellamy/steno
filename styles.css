@@ -3,6 +3,15 @@
 	font-weight: bold;
 }
 
+.steno-recording-dot {
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background-color: var(--text-error);
+	vertical-align: middle;
+}
+
 .steno-recording-modal {
 	text-align: center;
 }

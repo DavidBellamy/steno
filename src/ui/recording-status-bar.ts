@@ -38,6 +38,8 @@ export class RecordingStatusBar {
 		const minutes = Math.floor(seconds / 60);
 		const secs = seconds % 60;
 		const time = `${minutes}:${secs.toString().padStart(2, '0')}`;
-		this.statusBarItem.setText(`🔴 Recording ${time}`);
+		this.statusBarItem.empty();
+		this.statusBarItem.createSpan({ cls: 'steno-recording-dot' });
+		this.statusBarItem.appendText(` Recording ${time}`);
 	}
 }

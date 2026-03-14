@@ -1,4 +1,4 @@
-import { App, Modal, PluginSettingTab, Setting, TextAreaComponent } from 'obsidian';
+import { App, Modal, PluginSettingTab, Setting, TextAreaComponent, normalizePath } from 'obsidian';
 import { StenoSettings, ProcessingPrompt } from './types';
 import StenoPlugin from './main';
 
@@ -15,7 +15,7 @@ export class StenoSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		// --- Transcription ---
-		containerEl.createEl('h2', { text: 'Transcription' });
+		new Setting(containerEl).setName('Transcription').setHeading();
 
 		new Setting(containerEl)
 			.setName('Provider')
@@ -61,7 +61,7 @@ export class StenoSettingTab extends PluginSettingTab {
 		}
 
 		// --- LLM ---
-		containerEl.createEl('h2', { text: 'LLM Post-Processing' });
+		new Setting(containerEl).setName('LLM Post-Processing').setHeading();
 
 		new Setting(containerEl)
 			.setName('Provider')
@@ -154,7 +154,7 @@ export class StenoSettingTab extends PluginSettingTab {
 		}
 
 		// --- Processing Prompts ---
-		containerEl.createEl('h2', { text: 'Processing Prompts' });
+		new Setting(containerEl).setName('Processing Prompts').setHeading();
 
 		new Setting(containerEl)
 			.setName('Active prompt')
@@ -226,7 +226,7 @@ export class StenoSettingTab extends PluginSettingTab {
 		);
 
 		// --- Output ---
-		containerEl.createEl('h2', { text: 'Output' });
+		new Setting(containerEl).setName('Output').setHeading();
 
 		new Setting(containerEl)
 			.setName('Output mode')
@@ -252,7 +252,7 @@ export class StenoSettingTab extends PluginSettingTab {
 						.setValue(this.plugin.settings.outputFolder)
 						.setPlaceholder('Steno')
 						.onChange(async (v) => {
-							this.plugin.settings.outputFolder = v;
+							this.plugin.settings.outputFolder = normalizePath(v);
 							await this.plugin.saveSettings();
 						})
 				);
@@ -295,7 +295,7 @@ export class StenoSettingTab extends PluginSettingTab {
 			);
 
 		// --- Audio ---
-		containerEl.createEl('h2', { text: 'Audio' });
+		new Setting(containerEl).setName('Audio').setHeading();
 
 		new Setting(containerEl)
 			.setName('Save audio files')
@@ -316,7 +316,7 @@ export class StenoSettingTab extends PluginSettingTab {
 						.setValue(this.plugin.settings.audioFolder)
 						.setPlaceholder('Steno/audio')
 						.onChange(async (v) => {
-							this.plugin.settings.audioFolder = v;
+							this.plugin.settings.audioFolder = normalizePath(v);
 							await this.plugin.saveSettings();
 						})
 				);
@@ -336,7 +336,7 @@ class EditPromptModal extends Modal {
 
 	onOpen(): void {
 		const { contentEl } = this;
-		contentEl.createEl('h2', { text: 'Edit Processing Prompt' });
+		new Setting(contentEl).setName('Edit Processing Prompt').setHeading();
 
 		new Setting(contentEl).setName('Name').addText((text) =>
 			text.setValue(this.prompt.name).onChange((v) => {

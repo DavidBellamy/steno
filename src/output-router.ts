@@ -17,14 +17,15 @@ export class OutputRouter {
 		const content = this.buildContent(diarizedMarkdown, llmOutput);
 
 		if (this.settings.outputMode === 'current-note' && sourceFile) {
-			const existing = await this.app.vault.read(sourceFile);
-			await this.app.vault.modify(sourceFile, existing + '\n\n' + content);
+			await this.app.vault.process(sourceFile, (data) => {
+				return data + '\n\n' + content;
+			});
 			return sourceFile;
 		}
 
 		// New note mode
 		const title = await this.generateTitle(llmOutput || diarizedMarkdown, llmService);
-		const folder = this.settings.outputFolder;
+		const folder = normalizePath(this.settings.outputFolder);
 
 		// Ensure folder exists
 		await this.ensureFolder(folder);

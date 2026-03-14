@@ -1,10 +1,11 @@
-import { Notice, Plugin, TFile, TFolder } from 'obsidian';
+import { Notice, Plugin, TFile, normalizePath, Platform } from 'obsidian';
 import { StenoSettings, DEFAULT_SETTINGS } from './types';
 import { StenoSettingTab } from './settings';
 import { RecordingController } from './recording-controller';
 import { RecordingStatusBar } from './ui/recording-status-bar';
 import { RecordingControlsModal } from './ui/recording-controls-modal';
 import { PromptSelectorModal } from './ui/prompt-selector-modal';
+import { AudioFileSelectorModal } from './ui/audio-file-selector-modal';
 
 export default class StenoPlugin extends Plugin {
 	settings: StenoSettings = DEFAULT_SETTINGS;
@@ -107,7 +108,7 @@ export default class StenoPlugin extends Plugin {
 					// For iOS Shortcut flow: audio saved to vault externally
 					if (params.file) {
 						const file = this.app.vault.getAbstractFileByPath(
-							decodeURIComponent(params.file)
+							normalizePath(decodeURIComponent(params.file))
 						);
 						if (file instanceof TFile) {
 							await this.controller.importAudio(file);
@@ -161,7 +162,7 @@ export default class StenoPlugin extends Plugin {
 			this.statusBar.show();
 
 			// Show controls modal on mobile for easy stopping
-			if ((this.app as any).isMobile) {
+			if (Platform.isMobile) {
 				new RecordingControlsModal(
 					this.app,
 					() => this.controller.recorder.elapsedSeconds,
@@ -196,35 +197,6 @@ export default class StenoPlugin extends Plugin {
 
 		// Sort by modification time, most recent first
 		audioFiles.sort((a, b) => b.stat.mtime - a.stat.mtime);
-
-		const { SuggestModal } = await import('obsidian');
-
-		class AudioFileSelectorModal extends SuggestModal<TFile> {
-			private onChoose: (file: TFile) => void;
-			private files: TFile[];
-
-			constructor(app: any, files: TFile[], onChoose: (file: TFile) => void) {
-				super(app);
-				this.files = files;
-				this.onChoose = onChoose;
-				this.setPlaceholder('Select an audio file to transcribe...');
-			}
-
-			getSuggestions(query: string): TFile[] {
-				return this.files.filter((f) =>
-					f.path.toLowerCase().includes(query.toLowerCase())
-				);
-			}
-
-			renderSuggestion(file: TFile, el: HTMLElement): void {
-				el.createEl('div', { text: file.name });
-				el.createEl('small', { text: file.path });
-			}
-
-			onChooseSuggestion(file: TFile): void {
-				this.onChoose(file);
-			}
-		}
 
 		new AudioFileSelectorModal(this.app, audioFiles, async (file) => {
 			await this.controller.importAudio(file);

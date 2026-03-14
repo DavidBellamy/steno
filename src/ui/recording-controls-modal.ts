@@ -1,4 +1,4 @@
-import { App, Modal } from 'obsidian';
+import { App, Modal, Setting } from 'obsidian';
 
 export class RecordingControlsModal extends Modal {
 	private intervalId: number | null = null;
@@ -15,7 +15,7 @@ export class RecordingControlsModal extends Modal {
 		const { contentEl } = this;
 		contentEl.addClass('steno-recording-modal');
 
-		contentEl.createEl('h2', { text: 'Recording' });
+		new Setting(contentEl).setName('Recording').setHeading();
 
 		const timerEl = contentEl.createEl('div', {
 			cls: 'steno-timer',
