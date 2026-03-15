@@ -5,11 +5,12 @@ Record or import audio, transcribe with speaker diarization, and process through
 ## Features
 
 - **Audio recording** — Record directly within Obsidian with a single command or ribbon icon.
-- **Audio import** — Import existing audio files (mp3, m4a, wav, webm, ogg, flac) for transcription. Ideal for longer recordings made with screen off.
+- **Audio import** — Import existing audio files (mp3, mp4, m4a, wav, webm, ogg, flac) for transcription. Ideal for longer recordings made with screen off.
 - **Speaker diarization** — Transcripts identify and label different speakers automatically.
 - **LLM post-processing** — Run diarized transcripts through configurable prompts (meeting notes, summaries, action items, or your own custom prompts).
 - **Processing prompt bank** — Save and manage multiple named prompts. Switch between them from settings or via command palette.
 - **Flexible output** — Append to the current note or create a new note in a configurable folder with datetime or LLM-generated titles.
+- **Auto-transcribe** — On mobile, new audio files added to the audio folder are automatically detected and transcribed. Pairs well with the iOS Shortcut flow for screen-off recording.
 - **iOS Shortcut integration** — Trigger recording or import via `obsidian://steno` URI scheme. Bind to the iPhone Action Button for quick access.
 
 ## Setup
@@ -18,7 +19,7 @@ Record or import audio, transcribe with speaker diarization, and process through
 2. Open **Settings → Steno**.
 3. Add your API keys:
    - **Transcription**: [AssemblyAI](https://www.assemblyai.com/) or [Deepgram](https://deepgram.com/) (required for diarization).
-   - **LLM**: [OpenAI](https://platform.openai.com/), [Anthropic](https://console.anthropic.com/), or [Google Gemini](https://aistudio.google.com/) (required for post-processing prompts).
+   - **LLM**: [OpenAI](https://platform.openai.com/) (`gpt-4o`), [Anthropic](https://console.anthropic.com/) (`claude-sonnet-4-20250514`), or [Google Gemini](https://aistudio.google.com/) (`gemini-2.5-flash`) (required for post-processing prompts).
 4. Configure your preferred output mode and processing prompt.
 
 ## Usage
