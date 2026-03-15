@@ -1,7 +1,7 @@
 {
 	"id": "steno",
 	"name": "Steno",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"minAppVersion": "1.4.0",
 	"description": "Record or import audio, transcribe with speaker diarization, and process through LLM prompts.",
 	"author": "David Bellamy",
