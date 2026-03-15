@@ -11,6 +11,7 @@ export default class StenoPlugin extends Plugin {
 	settings: StenoSettings = DEFAULT_SETTINGS;
 	private controller!: RecordingController;
 	private statusBar!: RecordingStatusBar;
+	private selfCreatedFiles: Set<string> = new Set();
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
@@ -125,6 +126,33 @@ export default class StenoPlugin extends Plugin {
 		// Settings tab
 		this.addSettingTab(new StenoSettingTab(this.app, this));
 
+		// Auto-import: watch for new audio files in the audio folder
+		this.registerEvent(
+			this.app.vault.on('create', (file) => {
+				if (!(file instanceof TFile)) return;
+				if (!this.settings.autoImport) return;
+				if (this.controller.isRecording) return;
+
+				// Skip files created by Steno's own recording
+				if (this.selfCreatedFiles.has(file.path)) {
+					this.selfCreatedFiles.delete(file.path);
+					return;
+				}
+
+				const audioExtensions = ['mp3', 'mp4', 'm4a', 'wav', 'webm', 'ogg', 'flac'];
+				if (!audioExtensions.includes(file.extension.toLowerCase())) return;
+
+				const audioFolder = normalizePath(this.settings.audioFolder);
+				if (!file.path.startsWith(audioFolder)) return;
+
+				// Small delay to ensure file is fully synced
+				window.setTimeout(async () => {
+					new Notice(`Steno: Auto-transcribing ${file.name}...`);
+					await this.controller.importAudio(file);
+				}, 2000);
+			})
+		);
+
 		// Handle app visibility change (iOS backgrounding)
 		this.registerDomEvent(document, 'visibilitychange', () => {
 			if (document.hidden && this.controller.isRecording) {
@@ -177,7 +205,9 @@ export default class StenoPlugin extends Plugin {
 	private async stopRecording(): Promise<void> {
 		this.statusBar.hide();
 		try {
-			await this.controller.stopRecording();
+			await this.controller.stopRecording((filePath: string) => {
+				this.selfCreatedFiles.add(filePath);
+			});
 		} catch (e) {
 			new Notice(`Steno: Error during processing — ${e}`);
 		}

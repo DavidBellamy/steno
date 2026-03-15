@@ -275,27 +275,30 @@ export class StenoSettingTab extends PluginSettingTab {
 				.setName('Note title')
 				.addDropdown((dd) =>
 					dd
-						.addOption('datetime', 'Date/time')
 						.addOption('llm-generated', 'LLM-generated title')
+						.addOption('datetime', 'Date/time')
 						.setValue(this.plugin.settings.noteTitleMode)
 						.onChange(async (v) => {
 							this.plugin.settings.noteTitleMode = v as 'datetime' | 'llm-generated';
 							await this.plugin.saveSettings();
+							this.display();
 						})
 				);
 
-			new Setting(containerEl)
-				.setName('Date format')
-				.setDesc('Used for datetime titles')
-				.addText((text) =>
-					text
-						.setValue(this.plugin.settings.noteTitleDateFormat)
-						.setPlaceholder('YYYY-MM-DD HH-mm')
-						.onChange(async (v) => {
-							this.plugin.settings.noteTitleDateFormat = v;
-							await this.plugin.saveSettings();
-						})
-				);
+			if (this.plugin.settings.noteTitleMode === 'datetime') {
+				new Setting(containerEl)
+					.setName('Date format')
+					.setDesc('Used for datetime titles')
+					.addText((text) =>
+						text
+							.setValue(this.plugin.settings.noteTitleDateFormat)
+							.setPlaceholder('YYYY-MM-DD HH-mm')
+							.onChange(async (v) => {
+								this.plugin.settings.noteTitleDateFormat = v;
+								await this.plugin.saveSettings();
+							})
+					);
+			}
 		}
 
 		new Setting(containerEl)
@@ -312,29 +315,37 @@ export class StenoSettingTab extends PluginSettingTab {
 		new Setting(containerEl).setName('Audio').setHeading();
 
 		new Setting(containerEl)
-			.setName('Save audio files')
-			.setDesc('Keep recorded audio files in the vault')
+			.setName('Audio folder')
+			.setDesc('Where recordings and imported audio files are stored')
+			.addText((text) =>
+				text
+					.setValue(this.plugin.settings.audioFolder)
+					.setPlaceholder('Steno/audio')
+					.onChange(async (v) => {
+						this.plugin.settings.audioFolder = normalizePath(v);
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName('Keep audio files')
+			.setDesc('Keep audio files in the vault after transcription. When off, audio is deleted after successful processing.')
 			.addToggle((toggle) =>
 				toggle.setValue(this.plugin.settings.saveAudioFile).onChange(async (v) => {
 					this.plugin.settings.saveAudioFile = v;
 					await this.plugin.saveSettings();
-					this.display();
 				})
 			);
 
-		if (this.plugin.settings.saveAudioFile) {
-			new Setting(containerEl)
-				.setName('Audio folder')
-				.addText((text) =>
-					text
-						.setValue(this.plugin.settings.audioFolder)
-						.setPlaceholder('Steno/audio')
-						.onChange(async (v) => {
-							this.plugin.settings.audioFolder = normalizePath(v);
-							await this.plugin.saveSettings();
-						})
-				);
-		}
+		new Setting(containerEl)
+			.setName('Auto-transcribe imported audio')
+			.setDesc('Automatically transcribe new audio files that appear in the audio folder (e.g. from iOS Shortcuts)')
+			.addToggle((toggle) =>
+				toggle.setValue(this.plugin.settings.autoImport).onChange(async (v) => {
+					this.plugin.settings.autoImport = v;
+					await this.plugin.saveSettings();
+				})
+			);
 	}
 }
 

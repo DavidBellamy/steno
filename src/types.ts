@@ -35,6 +35,7 @@ export interface StenoSettings {
 
 	// Audio
 	saveAudioFile: boolean;
+	autoImport: boolean;
 	audioFolder: string;
 }
 
@@ -72,13 +73,14 @@ export const DEFAULT_SETTINGS: StenoSettings = {
 
 	outputMode: 'new-note',
 	outputFolder: 'Steno',
-	noteTitleMode: 'datetime',
+	noteTitleMode: 'llm-generated',
 	noteTitleDateFormat: 'YYYY-MM-DD HH-mm',
 	includeRawTranscript: true,
 
 	speakersExpected: 0,
 
 	saveAudioFile: true,
+	autoImport: true,
 	audioFolder: 'Steno/audio',
 };
 

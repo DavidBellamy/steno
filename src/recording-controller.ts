@@ -29,7 +29,7 @@ export class RecordingController {
 		new Notice('Steno: Recording started');
 	}
 
-	async stopRecording(): Promise<void> {
+	async stopRecording(onAudioSaved?: (filePath: string) => void): Promise<void> {
 		const settings = this.getSettings();
 		const sourceFile = this.app.workspace.getActiveFile();
 
@@ -38,23 +38,26 @@ export class RecordingController {
 		const audioData = await blob.arrayBuffer();
 
 		// Optionally save audio file
+		let savedAudioFile: TFile | null = null;
 		if (settings.saveAudioFile) {
-			await this.saveAudioFile(audioData, mimeType);
+			savedAudioFile = await this.saveAudioFile(audioData, mimeType);
+			if (onAudioSaved && savedAudioFile) {
+				onAudioSaved(savedAudioFile.path);
+			}
 		}
 
 		// Process pipeline
-		await this.processPipeline(audioData, mimeType, sourceFile);
+		await this.processPipeline(audioData, mimeType, sourceFile, savedAudioFile);
 	}
 
 	async importAudio(file: TFile): Promise<void> {
-		const settings = this.getSettings();
 		const sourceFile = this.app.workspace.getActiveFile();
 
 		new Notice('Steno: Reading audio file...');
 		const audioData = await this.app.vault.readBinary(file);
 		const mimeType = this.guessMimeType(file.extension);
 
-		await this.processPipeline(audioData, mimeType, sourceFile);
+		await this.processPipeline(audioData, mimeType, sourceFile, file);
 	}
 
 	async importAudioFromBuffer(audioData: ArrayBuffer, mimeType: string): Promise<void> {
@@ -65,7 +68,8 @@ export class RecordingController {
 	private async processPipeline(
 		audioData: ArrayBuffer,
 		mimeType: string,
-		sourceFile: TFile | null
+		sourceFile: TFile | null,
+		audioFile: TFile | null = null
 	): Promise<void> {
 		const settings = this.getSettings();
 
@@ -88,11 +92,13 @@ export class RecordingController {
 			(p) => p.id === settings.activePromptId
 		);
 		let llmOutput: string | null = null;
-		let llmService: LLMService | null = null;
+		// Always create LLM service if we need it for title generation or prompt processing
+		const needsLLM = (activePrompt && activePrompt.prompt.trim()) ||
+			settings.noteTitleMode === 'llm-generated';
+		const llmService: LLMService | null = needsLLM ? this.getLLMService(settings) : null;
 
-		if (activePrompt && activePrompt.prompt.trim()) {
+		if (activePrompt && activePrompt.prompt.trim() && llmService) {
 			new Notice(`Steno: Processing with "${activePrompt.name}"...`);
-			llmService = this.getLLMService(settings);
 			try {
 				llmOutput = await llmService.process(diarizedMarkdown, activePrompt.prompt);
 			} catch (e) {
@@ -115,6 +121,11 @@ export class RecordingController {
 			// Open the file if it's a new note
 			if (settings.outputMode === 'new-note') {
 				await this.app.workspace.openLinkText(outputFile.path, '', true);
+			}
+
+			// Delete audio file if user doesn't want to keep recordings
+			if (!settings.saveAudioFile && audioFile) {
+				await this.app.vault.delete(audioFile);
 			}
 		} catch (e) {
 			new Notice(`Steno: Failed to save output — ${e}`);
@@ -149,7 +160,7 @@ export class RecordingController {
 		}
 	}
 
-	private async saveAudioFile(audioData: ArrayBuffer, mimeType: string): Promise<void> {
+	private async saveAudioFile(audioData: ArrayBuffer, mimeType: string): Promise<TFile> {
 		const settings = this.getSettings();
 		const ext = this.recorder.getFileExtension(mimeType);
 		const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -162,7 +173,7 @@ export class RecordingController {
 		}
 
 		const filePath = normalizePath(`${folder}/recording-${timestamp}.${ext}`);
-		await this.app.vault.createBinary(filePath, audioData);
+		return await this.app.vault.createBinary(filePath, audioData);
 	}
 
 	private guessMimeType(ext: string): string {
