@@ -60,6 +60,20 @@ export class StenoSettingTab extends PluginSettingTab {
 				.then((s) => s.controlEl.querySelector('input')?.setAttribute('type', 'password'));
 		}
 
+		new Setting(containerEl)
+			.setName('Expected speakers')
+			.setDesc('Number of speakers to expect (0 = auto-detect). Setting this can improve diarization accuracy.')
+			.addText((text) =>
+				text
+					.setValue(String(this.plugin.settings.speakersExpected))
+					.setPlaceholder('0')
+					.onChange(async (v) => {
+						const num = parseInt(v, 10);
+						this.plugin.settings.speakersExpected = isNaN(num) ? 0 : Math.max(0, num);
+						await this.plugin.saveSettings();
+					})
+			);
+
 		// --- LLM ---
 		new Setting(containerEl).setName('LLM Post-Processing').setHeading();
 

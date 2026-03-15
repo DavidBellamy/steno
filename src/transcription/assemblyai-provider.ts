@@ -1,3 +1,4 @@
+import { requestUrl, Platform } from 'obsidian';
 import { TranscriptionService, DiarizedTranscript } from '../types';
 
 const BASE_URL = 'https://api.assemblyai.com/v2';
@@ -21,27 +22,22 @@ interface AssemblyAITranscriptResponse {
 }
 
 export class AssemblyAIProvider implements TranscriptionService {
-	constructor(private apiKey: string) {}
+	constructor(
+		private apiKey: string,
+		private speakersExpected: number = 0
+	) {}
 
 	async transcribe(audioData: ArrayBuffer, mimeType: string): Promise<DiarizedTranscript> {
 		// Step 1: Upload audio
-		const uploadRes = await fetch(`${BASE_URL}/upload`, {
-			method: 'POST',
-			headers: {
-				authorization: this.apiKey,
-				'content-type': 'application/octet-stream',
-			},
-			body: audioData,
-		});
-		if (!uploadRes.ok) {
-			const errText = await uploadRes.text();
-			throw new Error(`Upload failed (${uploadRes.status}): ${errText}`);
-		}
-		const uploadJson: AssemblyAIUploadResponse = await uploadRes.json();
-		const audioUrl = uploadJson.upload_url;
+		// Mobile: use requestUrl (bypasses CORS via native layer, handles binary fine)
+		// Desktop: use fetch (requestUrl mangles binary on Electron)
+		const audioUrl = Platform.isMobile
+			? await this.uploadViaRequestUrl(audioData)
+			: await this.uploadViaFetch(audioData);
 
 		// Step 2: Create transcript with speaker diarization
-		const transcriptRes = await fetch(`${BASE_URL}/transcript`, {
+		const transcriptRes = await requestUrl({
+			url: `${BASE_URL}/transcript`,
 			method: 'POST',
 			headers: {
 				authorization: this.apiKey,
@@ -51,30 +47,24 @@ export class AssemblyAIProvider implements TranscriptionService {
 				audio_url: audioUrl,
 				speaker_labels: true,
 				speech_models: ['universal-3-pro'],
+				...(this.speakersExpected > 0 && { speakers_expected: this.speakersExpected }),
 			}),
 		});
-		if (!transcriptRes.ok) {
-			const errText = await transcriptRes.text();
-			throw new Error(`Transcript creation failed (${transcriptRes.status}): ${errText}`);
-		}
-		const transcriptJson: AssemblyAITranscriptResponse = await transcriptRes.json();
+		const transcriptJson: AssemblyAITranscriptResponse = transcriptRes.json;
 		const transcriptId = transcriptJson.id;
 
 		// Step 3: Poll for completion
 		let result: AssemblyAITranscriptResponse = transcriptJson;
 		while (result.status !== 'completed' && result.status !== 'error') {
 			await this.sleep(3000);
-			const pollRes = await fetch(`${BASE_URL}/transcript/${transcriptId}`, {
+			const pollRes = await requestUrl({
+				url: `${BASE_URL}/transcript/${transcriptId}`,
 				method: 'GET',
 				headers: {
 					authorization: this.apiKey,
 				},
 			});
-			if (!pollRes.ok) {
-				const errText = await pollRes.text();
-				throw new Error(`Poll failed (${pollRes.status}): ${errText}`);
-			}
-			result = await pollRes.json();
+			result = pollRes.json;
 		}
 
 		if (result.status === 'error') {
@@ -90,6 +80,40 @@ export class AssemblyAIProvider implements TranscriptionService {
 		}));
 
 		return { utterances };
+	}
+
+	private async uploadViaRequestUrl(audioData: ArrayBuffer): Promise<string> {
+		const res = await requestUrl({
+			url: `${BASE_URL}/upload`,
+			method: 'POST',
+			headers: {
+				authorization: this.apiKey,
+				'content-type': 'application/octet-stream',
+			},
+			body: audioData,
+		});
+		const json: AssemblyAIUploadResponse = res.json;
+		if (!json.upload_url) {
+			throw new Error(`Upload response missing upload_url`);
+		}
+		return json.upload_url;
+	}
+
+	private async uploadViaFetch(audioData: ArrayBuffer): Promise<string> {
+		const res = await fetch(`${BASE_URL}/upload`, {
+			method: 'POST',
+			headers: {
+				authorization: this.apiKey,
+				'content-type': 'application/octet-stream',
+			},
+			body: audioData,
+		});
+		if (!res.ok) {
+			const errText = await res.text();
+			throw new Error(`Upload failed (${res.status}): ${errText}`);
+		}
+		const json: AssemblyAIUploadResponse = await res.json();
+		return json.upload_url;
 	}
 
 	private sleep(ms: number): Promise<void> {

@@ -1,6 +1,6 @@
 {
 	"name": "steno",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "Obsidian plugin for diarized audio transcription with LLM processing",
 	"main": "main.js",
 	"scripts": {

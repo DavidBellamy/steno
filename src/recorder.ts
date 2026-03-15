@@ -42,11 +42,20 @@ export class Recorder {
 			throw new Error('Already recording');
 		}
 
-		this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+		this.stream = await navigator.mediaDevices.getUserMedia({
+			audio: {
+				echoCancellation: false,
+				noiseSuppression: false,
+				autoGainControl: false,
+			},
+		});
 		const mimeType = this.getSupportedMimeType();
 
 		this.chunks = [];
-		this.mediaRecorder = new MediaRecorder(this.stream, { mimeType });
+		this.mediaRecorder = new MediaRecorder(this.stream, {
+			mimeType,
+			audioBitsPerSecond: 128000,
+		});
 
 		this.mediaRecorder.ondataavailable = (e: BlobEvent) => {
 			if (e.data.size > 0) {

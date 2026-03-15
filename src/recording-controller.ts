@@ -133,7 +133,7 @@ export class RecordingController {
 				return new DeepgramProvider(settings.deepgramApiKey);
 			case 'assemblyai':
 			default:
-				return new AssemblyAIProvider(settings.assemblyaiApiKey);
+				return new AssemblyAIProvider(settings.assemblyaiApiKey, settings.speakersExpected);
 		}
 	}
 

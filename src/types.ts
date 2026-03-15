@@ -30,6 +30,9 @@ export interface StenoSettings {
 	noteTitleDateFormat: string;
 	includeRawTranscript: boolean;
 
+	// Diarization
+	speakersExpected: number;
+
 	// Audio
 	saveAudioFile: boolean;
 	audioFolder: string;
@@ -72,6 +75,8 @@ export const DEFAULT_SETTINGS: StenoSettings = {
 	noteTitleMode: 'datetime',
 	noteTitleDateFormat: 'YYYY-MM-DD HH-mm',
 	includeRawTranscript: true,
+
+	speakersExpected: 0,
 
 	saveAudioFile: true,
 	audioFolder: 'Steno/audio',

@@ -42,11 +42,18 @@ Record or import audio, transcribe with speaker diarization, and process through
 1. Create an iOS Shortcut with a single "Open URL" action: `obsidian://steno?action=toggle`
 2. Assign the Shortcut to your iPhone Action Button.
 
-**For screen-off recording (recommended for meetings):**
-1. Create an iOS Shortcut that uses the "Record Audio" action.
-2. Add a "Save File" action to save the recording to your Obsidian vault (via iCloud or Files).
-3. Add an "Open URL" action: `obsidian://steno?action=import`
-4. Assign to the Action Button.
+**For screen-off recording with reliable diarization (recommended):**
+
+iOS applies audio processing to in-app recordings that can reduce diarization accuracy. For reliable multi-speaker detection, use a native iOS recording via Shortcuts. Your vault must use iCloud sync for this flow.
+
+1. Open the **Shortcuts** app on your iPhone.
+2. Create a new Shortcut with these actions in order:
+   - **Record Audio** — uses native iOS recording (works with screen off, no audio processing)
+   - **Save File** — set the destination to your Obsidian vault's audio folder in iCloud Drive (e.g., `iCloud Drive/Obsidian/YourVault/Steno/audio/`). Enable "Ask Where to Save" or set a fixed path.
+   - **Open URL** — set the URL to `obsidian://steno?action=import`
+3. Assign the Shortcut to your iPhone **Action Button** (Settings → Action Button → Shortcut).
+
+**How it works:** Press the Action Button → native recording starts (screen can turn off) → press Stop when done → audio saves to your vault → Obsidian opens and Steno automatically prompts you to select the audio file for transcription.
 
 ### URI scheme
 
