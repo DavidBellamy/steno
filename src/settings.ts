@@ -99,7 +99,7 @@ export class StenoSettingTab extends PluginSettingTab {
 				.addText((text) =>
 					text
 						.setValue(this.plugin.settings.openaiApiKey)
-						.setPlaceholder('sk-...')
+						.setPlaceholder('Enter API key')
 						.onChange(async (v) => {
 							this.plugin.settings.openaiApiKey = v;
 							await this.plugin.saveSettings();
@@ -123,7 +123,7 @@ export class StenoSettingTab extends PluginSettingTab {
 				.addText((text) =>
 					text
 						.setValue(this.plugin.settings.anthropicApiKey)
-						.setPlaceholder('sk-ant-...')
+						.setPlaceholder('Enter API key')
 						.onChange(async (v) => {
 							this.plugin.settings.anthropicApiKey = v;
 							await this.plugin.saveSettings();
@@ -187,7 +187,7 @@ export class StenoSettingTab extends PluginSettingTab {
 		for (const prompt of this.plugin.settings.processingPrompts) {
 			const s = new Setting(containerEl)
 				.setName(prompt.name)
-				.setDesc(prompt.prompt ? prompt.prompt.substring(0, 60) + '...' : '(no LLM processing)');
+				.setDesc(prompt.prompt ? prompt.prompt.substring(0, 60) + '...' : '(No LLM processing)');
 
 			s.addButton((btn) =>
 				btn.setButtonText('Edit').onClick(() => {
@@ -289,7 +289,7 @@ export class StenoSettingTab extends PluginSettingTab {
 					.addText((text) =>
 						text
 							.setValue(this.plugin.settings.noteTitleDateFormat)
-							.setPlaceholder('YYYY-MM-DD HH-mm')
+							.setPlaceholder('Yyyy-mm-dd hh-mm')
 							.onChange(async (v) => {
 								this.plugin.settings.noteTitleDateFormat = v;
 								await this.plugin.saveSettings();
@@ -336,7 +336,7 @@ export class StenoSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Auto-transcribe imported audio')
-			.setDesc('Automatically transcribe new audio files that appear in the audio folder (e.g. from iOS Shortcuts)')
+			.setDesc('Automatically transcribe new audio files that appear in the audio folder (via iOS shortcuts, etc.)')
 			.addToggle((toggle) =>
 				toggle.setValue(this.plugin.settings.autoImport).onChange(async (v) => {
 					this.plugin.settings.autoImport = v;

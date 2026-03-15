@@ -11,8 +11,11 @@
 	"license": "MIT",
 	"devDependencies": {
 		"@types/node": "^20.11.0",
+		"@typescript-eslint/parser": "^8.57.0",
 		"builtin-modules": "^3.3.0",
 		"esbuild": "0.20.0",
+		"eslint": "^9.39.4",
+		"eslint-plugin-obsidianmd": "file:../../../../private/tmp/obsidian-eslint-plugin",
 		"obsidian": "latest",
 		"typescript": "5.3.3"
 	}

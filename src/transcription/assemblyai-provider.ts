@@ -46,7 +46,7 @@ export class AssemblyAIProvider implements TranscriptionService {
 				...(this.speakersExpected > 0 && { speakers_expected: this.speakersExpected }),
 			}),
 		});
-		const transcriptJson: AssemblyAITranscriptResponse = transcriptRes.json;
+		const transcriptJson = transcriptRes.json as AssemblyAITranscriptResponse;
 		const transcriptId = transcriptJson.id;
 
 		// Step 3: Poll for completion
@@ -60,7 +60,7 @@ export class AssemblyAIProvider implements TranscriptionService {
 					authorization: this.apiKey,
 				},
 			});
-			result = pollRes.json;
+			result = pollRes.json as AssemblyAITranscriptResponse;
 		}
 
 		if (result.status === 'error') {
@@ -88,7 +88,7 @@ export class AssemblyAIProvider implements TranscriptionService {
 			},
 			body: audioData,
 		});
-		const json: AssemblyAIUploadResponse = res.json;
+		const json = res.json as AssemblyAIUploadResponse;
 		if (!json.upload_url) {
 			throw new Error(`Upload response missing upload_url`);
 		}

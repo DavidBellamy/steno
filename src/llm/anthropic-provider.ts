@@ -24,6 +24,7 @@ export class AnthropicProvider implements LLMService {
 			}),
 		});
 
-		return response.json.content[0].text;
+		const data = response.json as { content: { text: string }[] };
+		return data.content[0].text;
 	}
 }

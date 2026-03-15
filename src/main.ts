@@ -162,7 +162,7 @@ export default class StenoPlugin extends Plugin {
 		// Handle app visibility change (iOS backgrounding)
 		this.registerDomEvent(document, 'visibilitychange', () => {
 			if (document.hidden && this.controller.isRecording) {
-				new Notice('Steno: App is going to background — recording may stop. Consider using Import for longer recordings.');
+				new Notice('Steno: App is going to background — recording may stop. Consider using import for longer recordings.');
 			}
 		});
 	}
@@ -175,7 +175,7 @@ export default class StenoPlugin extends Plugin {
 	}
 
 	async loadSettings(): Promise<void> {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData() as Partial<StenoSettings>);
 	}
 
 	async saveSettings(): Promise<void> {

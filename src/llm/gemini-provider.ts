@@ -26,6 +26,7 @@ export class GeminiProvider implements LLMService {
 			}),
 		});
 
-		return response.json.candidates[0].content.parts[0].text;
+		const data = response.json as { candidates: { content: { parts: { text: string }[] } }[] };
+		return data.candidates[0].content.parts[0].text;
 	}
 }

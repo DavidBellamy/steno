@@ -25,7 +25,7 @@ export class PromptSelectorModal extends SuggestModal<ProcessingPrompt> {
 				text: prompt.prompt.substring(0, 80) + (prompt.prompt.length > 80 ? '...' : ''),
 			});
 		} else {
-			el.createEl('small', { text: '(no LLM processing)' });
+			el.createEl('small', { text: '(No LLM processing)' });
 		}
 	}
 

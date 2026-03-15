@@ -24,6 +24,7 @@ export class OpenAIProvider implements LLMService {
 			}),
 		});
 
-		return response.json.choices[0].message.content;
+		const data = response.json as { choices: { message: { content: string } }[] };
+		return data.choices[0].message.content;
 	}
 }

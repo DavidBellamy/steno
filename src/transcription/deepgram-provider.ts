@@ -15,15 +15,22 @@ export class DeepgramProvider implements TranscriptionService {
 			body: audioData,
 		});
 
-		const result = response.json;
-		const utterances = (result.results?.utterances || []).map(
-			(u: { speaker: number; transcript: string; start: number; end: number }) => ({
-				speaker: `Speaker ${u.speaker}`,
-				text: u.transcript,
-				start: Math.round(u.start * 1000),
-				end: Math.round(u.end * 1000),
-			})
-		);
+		interface DeepgramUtterance {
+			speaker: number;
+			transcript: string;
+			start: number;
+			end: number;
+		}
+		interface DeepgramResponse {
+			results?: { utterances?: DeepgramUtterance[] };
+		}
+		const result = response.json as DeepgramResponse;
+		const utterances = (result.results?.utterances ?? []).map((u) => ({
+			speaker: `Speaker ${u.speaker}`,
+			text: u.transcript,
+			start: Math.round(u.start * 1000),
+			end: Math.round(u.end * 1000),
+		}));
 
 		return { utterances };
 	}
