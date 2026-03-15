@@ -46,3 +46,7 @@
 	display: flex;
 	gap: 0.5em;
 }
+
+.steno-prompt-textarea {
+	width: 100%;
+}

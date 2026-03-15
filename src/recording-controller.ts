@@ -124,7 +124,7 @@ export class RecordingController {
 
 			// Delete audio file if user doesn't want to keep recordings
 			if (!settings.saveAudioFile && audioFile) {
-				await this.app.vault.delete(audioFile);
+				await this.app.fileManager.trashFile(audioFile);
 			}
 		} catch (e) {
 			new Notice(`Steno: Failed to save output — ${e}`);

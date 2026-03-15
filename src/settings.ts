@@ -1,5 +1,5 @@
 import { App, Modal, PluginSettingTab, Setting, TextAreaComponent, normalizePath } from 'obsidian';
-import { StenoSettings, ProcessingPrompt } from './types';
+import { ProcessingPrompt } from './types';
 import StenoPlugin from './main';
 
 export class StenoSettingTab extends PluginSettingTab {
@@ -75,7 +75,7 @@ export class StenoSettingTab extends PluginSettingTab {
 			);
 
 		// --- LLM ---
-		new Setting(containerEl).setName('LLM Post-Processing').setHeading();
+		new Setting(containerEl).setName('LLM post-processing').setHeading();
 
 		new Setting(containerEl)
 			.setName('Provider')
@@ -168,7 +168,7 @@ export class StenoSettingTab extends PluginSettingTab {
 		}
 
 		// --- Processing Prompts ---
-		new Setting(containerEl).setName('Processing Prompts').setHeading();
+		new Setting(containerEl).setName('Processing prompts').setHeading();
 
 		new Setting(containerEl)
 			.setName('Active prompt')
@@ -191,14 +191,13 @@ export class StenoSettingTab extends PluginSettingTab {
 
 			s.addButton((btn) =>
 				btn.setButtonText('Edit').onClick(() => {
-					new EditPromptModal(this.app, prompt, async (updated) => {
+					new EditPromptModal(this.app, prompt, (updated) => {
 						const idx = this.plugin.settings.processingPrompts.findIndex(
 							(p) => p.id === prompt.id
 						);
 						if (idx >= 0) {
 							this.plugin.settings.processingPrompts[idx] = updated;
-							await this.plugin.saveSettings();
-							this.display();
+							void this.plugin.saveSettings().then(() => this.display());
 						}
 					}).open();
 				})
@@ -210,31 +209,29 @@ export class StenoSettingTab extends PluginSettingTab {
 					btn
 						.setButtonText('Delete')
 						.setWarning()
-						.onClick(async () => {
+						.onClick(() => {
 							this.plugin.settings.processingPrompts =
 								this.plugin.settings.processingPrompts.filter((p) => p.id !== prompt.id);
 							if (this.plugin.settings.activePromptId === prompt.id) {
 								this.plugin.settings.activePromptId =
 									this.plugin.settings.processingPrompts[0]?.id || '';
 							}
-							await this.plugin.saveSettings();
-							this.display();
+							void this.plugin.saveSettings().then(() => this.display());
 						})
 				);
 			}
 		}
 
 		new Setting(containerEl).addButton((btn) =>
-			btn.setButtonText('Add Prompt').setCta().onClick(() => {
+			btn.setButtonText('Add prompt').setCta().onClick(() => {
 				const newPrompt: ProcessingPrompt = {
 					id: crypto.randomUUID(),
-					name: 'New Prompt',
+					name: 'New prompt',
 					prompt: '',
 				};
-				new EditPromptModal(this.app, newPrompt, async (updated) => {
+				new EditPromptModal(this.app, newPrompt, (updated) => {
 					this.plugin.settings.processingPrompts.push(updated);
-					await this.plugin.saveSettings();
-					this.display();
+					void this.plugin.saveSettings().then(() => this.display());
 				}).open();
 			})
 		);
@@ -361,7 +358,7 @@ class EditPromptModal extends Modal {
 
 	onOpen(): void {
 		const { contentEl } = this;
-		new Setting(contentEl).setName('Edit Processing Prompt').setHeading();
+		new Setting(contentEl).setName('Edit processing prompt').setHeading();
 
 		new Setting(contentEl).setName('Name').addText((text) =>
 			text.setValue(this.prompt.name).onChange((v) => {
@@ -377,7 +374,7 @@ class EditPromptModal extends Modal {
 			this.prompt.prompt = v;
 		});
 		textArea.inputEl.rows = 8;
-		textArea.inputEl.style.width = '100%';
+		textArea.inputEl.addClass('steno-prompt-textarea');
 
 		new Setting(contentEl).addButton((btn) =>
 			btn

@@ -56,7 +56,7 @@ export const DEFAULT_SETTINGS: StenoSettings = {
 	processingPrompts: [
 		{
 			id: 'default-meeting-notes',
-			name: 'Meeting Notes',
+			name: 'Meeting notes',
 			prompt: 'You are given a diarized transcript of a meeting with speakers labeled. Extract and format:\n\n1. **Attendees** — list the speakers\n2. **Key Discussion Points** — summarize the main topics\n3. **Decisions Made** — any conclusions or agreements\n4. **Action Items** — who is responsible for what\n\nKeep it concise and well-structured in Markdown.',
 		},
 		{
@@ -66,7 +66,7 @@ export const DEFAULT_SETTINGS: StenoSettings = {
 		},
 		{
 			id: 'default-raw',
-			name: 'Raw Transcript (no LLM)',
+			name: 'Raw transcript (no LLM)',
 			prompt: '',
 		},
 	],

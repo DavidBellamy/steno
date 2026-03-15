@@ -23,7 +23,7 @@ export class RecordingControlsModal extends Modal {
 		});
 
 		const stopBtn = contentEl.createEl('button', {
-			text: 'Stop Recording',
+			text: 'Stop recording',
 			cls: 'steno-stop-button mod-cta',
 		});
 		stopBtn.addEventListener('click', () => {

@@ -1,4 +1,4 @@
-import { requestUrl, Platform } from 'obsidian';
+import { requestUrl } from 'obsidian';
 import { TranscriptionService, DiarizedTranscript } from '../types';
 
 const BASE_URL = 'https://api.assemblyai.com/v2';
@@ -29,11 +29,7 @@ export class AssemblyAIProvider implements TranscriptionService {
 
 	async transcribe(audioData: ArrayBuffer, mimeType: string): Promise<DiarizedTranscript> {
 		// Step 1: Upload audio
-		// Mobile: use requestUrl (bypasses CORS via native layer, handles binary fine)
-		// Desktop: use fetch (requestUrl mangles binary on Electron)
-		const audioUrl = Platform.isMobile
-			? await this.uploadViaRequestUrl(audioData)
-			: await this.uploadViaFetch(audioData);
+		const audioUrl = await this.uploadAudio(audioData);
 
 		// Step 2: Create transcript with speaker diarization
 		const transcriptRes = await requestUrl({
@@ -82,7 +78,7 @@ export class AssemblyAIProvider implements TranscriptionService {
 		return { utterances };
 	}
 
-	private async uploadViaRequestUrl(audioData: ArrayBuffer): Promise<string> {
+	private async uploadAudio(audioData: ArrayBuffer): Promise<string> {
 		const res = await requestUrl({
 			url: `${BASE_URL}/upload`,
 			method: 'POST',
@@ -96,23 +92,6 @@ export class AssemblyAIProvider implements TranscriptionService {
 		if (!json.upload_url) {
 			throw new Error(`Upload response missing upload_url`);
 		}
-		return json.upload_url;
-	}
-
-	private async uploadViaFetch(audioData: ArrayBuffer): Promise<string> {
-		const res = await fetch(`${BASE_URL}/upload`, {
-			method: 'POST',
-			headers: {
-				authorization: this.apiKey,
-				'content-type': 'application/octet-stream',
-			},
-			body: audioData,
-		});
-		if (!res.ok) {
-			const errText = await res.text();
-			throw new Error(`Upload failed (${res.status}): ${errText}`);
-		}
-		const json: AssemblyAIUploadResponse = await res.json();
 		return json.upload_url;
 	}
 

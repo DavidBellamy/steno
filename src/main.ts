@@ -56,8 +56,8 @@ export default class StenoPlugin extends Plugin {
 		this.addCommand({
 			id: 'import-audio',
 			name: 'Import audio file for transcription',
-			callback: async () => {
-				await this.importAudioFromVault();
+			callback: () => {
+				this.importAudioFromVault();
 			},
 		});
 
@@ -68,10 +68,11 @@ export default class StenoPlugin extends Plugin {
 				new PromptSelectorModal(
 					this.app,
 					this.settings.processingPrompts,
-					async (prompt) => {
+					(prompt) => {
 						this.settings.activePromptId = prompt.id;
-						await this.saveSettings();
-						new Notice(`Steno: Active prompt set to "${prompt.name}"`);
+						void this.saveSettings().then(() => {
+							new Notice(`Steno: Active prompt set to "${prompt.name}"`);
+						});
 					}
 				).open();
 			},
@@ -117,7 +118,7 @@ export default class StenoPlugin extends Plugin {
 							new Notice('Steno: Audio file not found in vault');
 						}
 					} else {
-						await this.importAudioFromVault();
+						this.importAudioFromVault();
 					}
 					break;
 			}
@@ -150,9 +151,9 @@ export default class StenoPlugin extends Plugin {
 					if (!file.path.startsWith(audioFolder)) return;
 
 					// Small delay to ensure file is fully synced
-					window.setTimeout(async () => {
+					window.setTimeout(() => {
 						new Notice(`Steno: Auto-transcribing ${file.name}...`);
-						await this.controller.importAudio(file);
+						void this.controller.importAudio(file);
 					}, 2000);
 				})
 			);
@@ -199,7 +200,7 @@ export default class StenoPlugin extends Plugin {
 				new RecordingControlsModal(
 					this.app,
 					() => this.controller.recorder.elapsedSeconds,
-					async () => await this.stopRecording()
+					() => { void this.stopRecording(); }
 				).open();
 			}
 		} catch (e) {
@@ -218,7 +219,7 @@ export default class StenoPlugin extends Plugin {
 		}
 	}
 
-	private async importAudioFromVault(): Promise<void> {
+	private importAudioFromVault(): void {
 		// Get all audio files in the vault
 		const audioExtensions = ['mp3', 'mp4', 'm4a', 'wav', 'webm', 'ogg', 'flac'];
 		const audioFiles = this.app.vault.getFiles().filter((f) =>
@@ -233,8 +234,8 @@ export default class StenoPlugin extends Plugin {
 		// Sort by modification time, most recent first
 		audioFiles.sort((a, b) => b.stat.mtime - a.stat.mtime);
 
-		new AudioFileSelectorModal(this.app, audioFiles, async (file) => {
-			await this.controller.importAudio(file);
+		new AudioFileSelectorModal(this.app, audioFiles, (file) => {
+			void this.controller.importAudio(file);
 		}).open();
 	}
 }

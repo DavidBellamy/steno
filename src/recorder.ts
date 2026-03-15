@@ -84,9 +84,10 @@ export class Recorder {
 				resolve({ blob, mimeType });
 			};
 
-			this.mediaRecorder.onerror = (e) => {
+			this.mediaRecorder.onerror = (e: Event) => {
 				this.cleanup();
-				reject(new Error(`Recording error: ${e}`));
+				const message = e instanceof ErrorEvent ? e.message : 'unknown error';
+				reject(new Error(`Recording error: ${message}`));
 			};
 
 			this.mediaRecorder.stop();
