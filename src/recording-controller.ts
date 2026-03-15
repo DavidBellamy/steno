@@ -40,10 +40,9 @@ export class RecordingController {
 		// Optionally save audio file
 		let savedAudioFile: TFile | null = null;
 		if (settings.saveAudioFile) {
-			savedAudioFile = await this.saveAudioFile(audioData, mimeType);
-			if (onAudioSaved && savedAudioFile) {
-				onAudioSaved(savedAudioFile.path);
-			}
+			const filePath = this.getAudioFilePath(mimeType);
+			if (onAudioSaved) onAudioSaved(filePath);
+			savedAudioFile = await this.saveAudioFile(audioData, mimeType, filePath);
 		}
 
 		// Process pipeline
@@ -160,11 +159,16 @@ export class RecordingController {
 		}
 	}
 
-	private async saveAudioFile(audioData: ArrayBuffer, mimeType: string): Promise<TFile> {
+	private getAudioFilePath(mimeType: string): string {
 		const settings = this.getSettings();
 		const ext = this.recorder.getFileExtension(mimeType);
 		const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
 		const folder = normalizePath(settings.audioFolder);
+		return normalizePath(`${folder}/recording-${timestamp}.${ext}`);
+	}
+
+	private async saveAudioFile(audioData: ArrayBuffer, mimeType: string, filePath: string): Promise<TFile> {
+		const folder = normalizePath(this.getSettings().audioFolder);
 
 		// Ensure folder exists
 		const existing = this.app.vault.getAbstractFileByPath(folder);
@@ -172,7 +176,6 @@ export class RecordingController {
 			await this.app.vault.createFolder(folder);
 		}
 
-		const filePath = normalizePath(`${folder}/recording-${timestamp}.${ext}`);
 		return await this.app.vault.createBinary(filePath, audioData);
 	}
 

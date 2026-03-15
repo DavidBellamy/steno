@@ -127,31 +127,36 @@ export default class StenoPlugin extends Plugin {
 		this.addSettingTab(new StenoSettingTab(this.app, this));
 
 		// Auto-import: watch for new audio files in the audio folder
-		this.registerEvent(
-			this.app.vault.on('create', (file) => {
-				if (!(file instanceof TFile)) return;
-				if (!this.settings.autoImport) return;
-				if (this.controller.isRecording) return;
+		// Only on mobile — desktop receives files via iCloud sync and would duplicate work
+		// Wait until vault is fully indexed to avoid triggering on existing files at startup
+		this.app.workspace.onLayoutReady(() => {
+			this.registerEvent(
+				this.app.vault.on('create', (file) => {
+					if (!(file instanceof TFile)) return;
+					if (!Platform.isMobile) return;
+					if (!this.settings.autoImport) return;
+					if (this.controller.isRecording) return;
 
-				// Skip files created by Steno's own recording
-				if (this.selfCreatedFiles.has(file.path)) {
-					this.selfCreatedFiles.delete(file.path);
-					return;
-				}
+					// Skip files created by Steno's own recording
+					if (this.selfCreatedFiles.has(file.path)) {
+						this.selfCreatedFiles.delete(file.path);
+						return;
+					}
 
-				const audioExtensions = ['mp3', 'mp4', 'm4a', 'wav', 'webm', 'ogg', 'flac'];
-				if (!audioExtensions.includes(file.extension.toLowerCase())) return;
+					const audioExtensions = ['mp3', 'mp4', 'm4a', 'wav', 'webm', 'ogg', 'flac'];
+					if (!audioExtensions.includes(file.extension.toLowerCase())) return;
 
-				const audioFolder = normalizePath(this.settings.audioFolder);
-				if (!file.path.startsWith(audioFolder)) return;
+					const audioFolder = normalizePath(this.settings.audioFolder);
+					if (!file.path.startsWith(audioFolder)) return;
 
-				// Small delay to ensure file is fully synced
-				window.setTimeout(async () => {
-					new Notice(`Steno: Auto-transcribing ${file.name}...`);
-					await this.controller.importAudio(file);
-				}, 2000);
-			})
-		);
+					// Small delay to ensure file is fully synced
+					window.setTimeout(async () => {
+						new Notice(`Steno: Auto-transcribing ${file.name}...`);
+						await this.controller.importAudio(file);
+					}, 2000);
+				})
+			);
+		});
 
 		// Handle app visibility change (iOS backgrounding)
 		this.registerDomEvent(document, 'visibilitychange', () => {

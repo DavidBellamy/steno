@@ -37,6 +37,7 @@ export interface StenoSettings {
 	saveAudioFile: boolean;
 	autoImport: boolean;
 	audioFolder: string;
+
 }
 
 export const DEFAULT_SETTINGS: StenoSettings = {
