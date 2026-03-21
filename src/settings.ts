@@ -289,7 +289,7 @@ export class StenoSettingTab extends PluginSettingTab {
 					.addText((text) =>
 						text
 							.setValue(this.plugin.settings.noteTitleDateFormat)
-							.setPlaceholder('Yyyy-mm-dd hh-mm')
+							.setPlaceholder('YYYY-MM-DD HH-mm')
 							.onChange(async (v) => {
 								this.plugin.settings.noteTitleDateFormat = v;
 								await this.plugin.saveSettings();
